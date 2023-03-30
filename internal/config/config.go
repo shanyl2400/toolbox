@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -13,6 +14,8 @@ type Config struct {
 
 	HttpPort   int    `yaml:"http_port"`
 	AssetsPath string `yaml:"assets_path"`
+
+	Environments []string `yaml:"environments"`
 }
 
 var (
@@ -30,6 +33,9 @@ func Get() *Config {
 			HttpPort:   8088,
 			BoltDBPath: "./data.db",
 			AssetsPath: "./assets",
+			Environments: []string{
+				"研发环境", "预发环境", "生产环境",
+			},
 		}
 		conf, err := os.ReadFile("./config.yaml")
 		if err != nil {
@@ -41,6 +47,7 @@ func Get() *Config {
 			log.Println("bad config file format")
 			return
 		}
+		fmt.Println(">>>:", _config.Environments)
 	})
 	return _config
 }

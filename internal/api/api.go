@@ -1,8 +1,8 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
+	"toolbox/internal/config"
 	"toolbox/internal/errors"
 	"toolbox/internal/model"
 	"toolbox/internal/service"
@@ -241,8 +241,9 @@ func (api *API) listColumns(c *gin.Context) {
 }
 
 func (api *API) listEnvironments(c *gin.Context) {
-	output := make([]*EnvironmentInfo, 0, len(service.Environments))
-	for _, env := range service.Environments {
+	environments := config.Get().Environments
+	output := make([]*EnvironmentInfo, 0, len(environments))
+	for _, env := range environments {
 		output = append(output, &EnvironmentInfo{Name: env})
 	}
 
@@ -330,9 +331,9 @@ func (api *API) groupByEnvironments(c *gin.Context, tools []*model.Tool) {
 			columnsMap[tool.ColumnName] = struct{}{}
 		}
 	}
-	fmt.Println(columnsSet)
 
-	for _, envName := range service.Environments {
+	environments := config.Get().Environments
+	for _, envName := range environments {
 		env := &Environment{
 			Name: envName,
 		}

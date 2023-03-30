@@ -1,17 +1,12 @@
 package service
 
 import (
+	"toolbox/internal/config"
 	"toolbox/internal/errors"
 	"toolbox/internal/model"
 	"toolbox/internal/repository"
 	rmodel "toolbox/internal/repository/model"
 	"toolbox/internal/storage"
-)
-
-var (
-	Environments = []string{
-		"研发环境", "预发环境", "生产环境",
-	}
 )
 
 type IToolsService interface {
@@ -138,8 +133,8 @@ func (t *toolsService) checkBasicInfo(req *model.ToolBasicInfo) error {
 }
 
 func (t *toolsService) containsEnv(env string) bool {
-	for i := range Environments {
-		if Environments[i] == env {
+	for _, environment := range config.Get().Environments {
+		if environment == env {
 			return true
 		}
 	}
