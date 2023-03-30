@@ -1,0 +1,3 @@
+boltdb_path: "./data.db"
+http_port: 8088
+assets_path: "./assets"
