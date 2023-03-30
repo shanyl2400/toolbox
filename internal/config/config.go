@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -47,7 +46,6 @@ func Get() *Config {
 			log.Println("bad config file format")
 			return
 		}
-		fmt.Println(">>>:", _config.Environments)
 	})
 	return _config
 }
