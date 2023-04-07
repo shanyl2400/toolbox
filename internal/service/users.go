@@ -14,6 +14,7 @@ type IUsersService interface {
 	Register(name string, password string) error
 	Login(name string, password string) (string, error)
 
+	UpdatePassword(name string, oldPassword string, newPassword string) error
 	CheckToken(token string) error
 
 	Get(name string) (*model.UserInfo, error)
@@ -71,6 +72,30 @@ func (u *userService) Login(name string, password string) (string, error) {
 		return "", err
 	}
 	return token, nil
+}
+
+func (u *userService) UpdatePassword(name string, oldPassword string, newPassword string) error {
+	user, err := repository.GetUsersRepository().Get(name)
+	if err != nil {
+		logs.Warn("get user failed",
+			zap.Error(err),
+			zap.String("username", name))
+		return errors.ErrGetUserFailed
+	}
+	if user.PasswordHash != utils.Hash(oldPassword) {
+		return errors.ErrIncorrectPassword
+	}
+	err = repository.GetUsersRepository().Set(&model.User{
+		UserName:     name,
+		PasswordHash: utils.Hash(newPassword),
+	})
+	if err != nil {
+		logs.Warn("put user failed",
+			zap.Error(err),
+			zap.String("username", name))
+		return errors.ErrPutUserFailed
+	}
+	return nil
 }
 
 func (u *userService) CheckToken(token string) error {

@@ -10,6 +10,11 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
 type CreateToolRequest struct {
 	Name        string `json:"name"`
 	URL         string `json:"url"`

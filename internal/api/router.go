@@ -10,6 +10,7 @@ func route(e *gin.Engine) {
 	{
 		//users.POST("/entities", _api.register)
 		users.POST("/token", _api.login)
+		users.PUT("/entities/:name/password", _api.checkAuth, _api.updatePassword)
 		users.GET("/entities/:name", _api.checkAuth, _api.getUser)
 		users.GET("/entities", _api.checkAuth, _api.listUsers)
 	}

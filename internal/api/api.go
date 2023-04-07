@@ -57,7 +57,42 @@ func (api *API) login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, GeneralResponse{Message: err.Error()})
 		return
 	}
+}
 
+func (api *API) updatePassword(c *gin.Context) {
+	req := new(UpdatePasswordRequest)
+	tokenUserName, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusForbidden, GeneralResponse{Message: "unknown username"})
+		return
+	}
+	name := c.Param("name")
+	if tokenUserName != name {
+		c.JSON(http.StatusForbidden, GeneralResponse{Message: "no permission to update other's password"})
+		return
+	}
+
+	err := c.ShouldBind(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GeneralResponse{Message: "bad request"})
+		return
+	}
+	err = api.usersService.UpdatePassword(name, req.OldPassword, req.NewPassword)
+	switch err {
+	case errors.ErrGetUserFailed:
+		c.JSON(http.StatusNotFound, GeneralResponse{Message: errors.ErrNoSuchUser.Error()})
+		return
+	case errors.ErrIncorrectPassword:
+		c.JSON(http.StatusForbidden, GeneralResponse{Message: err.Error()})
+		return
+	case nil:
+		c.JSON(http.StatusOK, GeneralResponse{
+			Message: "success",
+		})
+	default:
+		c.JSON(http.StatusInternalServerError, GeneralResponse{Message: err.Error()})
+		return
+	}
 }
 
 func (api *API) getUser(c *gin.Context) {
