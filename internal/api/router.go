@@ -39,6 +39,7 @@ func route(e *gin.Engine) {
 	profiles := e.Group("/profiles")
 	{
 		profiles.POST("", _api.checkAuth, _api.uploadProfile)
-		profiles.GET("/:name", _api.getProfile)
+		// profiles.GET("/:name", _api.getProfile)
+		profiles.Static("/", "./assets")
 	}
 }
