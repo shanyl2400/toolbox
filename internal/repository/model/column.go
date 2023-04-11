@@ -1,7 +1,8 @@
 package model
 
 type Column struct {
-	Name string
+	Name     string
+	Priority uint
 
 	CreatedAt int64
 	UpdatedAt int64

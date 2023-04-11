@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sort"
 	"toolbox/internal/errors"
 	"toolbox/internal/model"
 	"toolbox/internal/repository"
@@ -8,7 +9,7 @@ import (
 )
 
 type IColumnsService interface {
-	Put(name string) error
+	Put(name string, priority uint) error
 	Delete(name string) error
 
 	Get(name string) (*model.Column, error)
@@ -18,12 +19,13 @@ type IColumnsService interface {
 
 type columnService struct{}
 
-func (c *columnService) Put(name string) error {
+func (c *columnService) Put(name string, priority uint) error {
 	if name == "" {
 		return errors.ErrEmptyColumnParams
 	}
 	err := repository.GetColumnsRepository().Set(&rmodel.Column{
-		Name: name,
+		Name:     name,
+		Priority: priority,
 	})
 	if err != nil {
 		return err
@@ -55,7 +57,8 @@ func (c *columnService) Get(name string) (*model.Column, error) {
 		return nil, err
 	}
 	return &model.Column{
-		Name: column.Name,
+		Name:     column.Name,
+		Priority: column.Priority,
 	}, nil
 }
 
@@ -67,9 +70,14 @@ func (c *columnService) List() ([]*model.Column, error) {
 	ans := make([]*model.Column, len(columns))
 	for i := range columns {
 		ans[i] = &model.Column{
-			Name: columns[i].Name,
+			Name:     columns[i].Name,
+			Priority: columns[i].Priority,
 		}
 	}
+	sort.Slice(ans, func(i, j int) bool {
+		return ans[i].Priority > ans[j].Priority
+	})
+
 	return ans, nil
 }
 

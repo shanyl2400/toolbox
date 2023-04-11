@@ -26,5 +26,6 @@ type ToolBasicInfo struct {
 }
 
 type Column struct {
-	Name string
+	Name     string
+	Priority uint
 }

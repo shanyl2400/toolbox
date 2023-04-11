@@ -48,17 +48,22 @@ type ToolInfo struct {
 }
 
 type Column struct {
-	Name  string      `json:"name"`
-	Tools []*ToolInfo `json:"tools,omitempty"`
+	Name     string      `json:"name"`
+	Priority uint        `json:"priority"`
+	Tools    []*ToolInfo `json:"tools,omitempty"`
 }
 
 type Environment struct {
 	Name    string    `json:"name"`
 	Columns []*Column `json:"columns,omitempty"`
 }
+type PutColumnRequest struct {
+	Priority uint `json:"priority"`
+}
 
 type ColumnInfo struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Priority uint   `json:"priority"`
 }
 
 type EnvironmentInfo struct {

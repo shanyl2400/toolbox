@@ -228,13 +228,25 @@ func (api *API) listTools(c *gin.Context) {
 	case "tool":
 		api.groupByTools(c, tools)
 	case "environment":
-		api.groupByEnvironments(c, tools)
+		columns, err := api.columnsService.List()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, GeneralResponse{Message: err.Error()})
+			return
+		}
+		api.groupByEnvironments(c, columns, tools)
 	}
 }
 
 func (api *API) putColumn(c *gin.Context) {
 	name := c.Param("name")
-	err := api.columnsService.Put(name)
+	req := new(PutColumnRequest)
+	err := c.ShouldBind(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GeneralResponse{Message: "bad request"})
+		return
+	}
+
+	err = api.columnsService.Put(name, req.Priority)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GeneralResponse{Message: err.Error()})
 		return
@@ -266,7 +278,7 @@ func (api *API) listColumns(c *gin.Context) {
 	}
 	output := make([]*ColumnInfo, 0, len(columns))
 	for _, column := range columns {
-		output = append(output, &ColumnInfo{Name: column.Name})
+		output = append(output, &ColumnInfo{Name: column.Name, Priority: column.Priority})
 	}
 
 	c.JSON(http.StatusOK, GeneralResponse{
@@ -340,11 +352,10 @@ func (api *API) groupByTools(c *gin.Context, tools []*model.Tool) {
 	})
 }
 
-func (api *API) groupByEnvironments(c *gin.Context, tools []*model.Tool) {
+func (api *API) groupByEnvironments(c *gin.Context, columns []*model.Column, tools []*model.Tool) {
 	output := make([]*Environment, 0, len(tools))
 	envColumnMap := make(map[string]map[string][]*ToolInfo)
-	columnsSet := make([]string, 0)
-	columnsMap := make(map[string]struct{})
+
 	for _, tool := range tools {
 		envMap := envColumnMap[tool.Environment]
 		if envMap == nil {
@@ -360,11 +371,6 @@ func (api *API) groupByEnvironments(c *gin.Context, tools []*model.Tool) {
 			ColumnName:  tool.ColumnName,
 		})
 		envColumnMap[tool.Environment] = envMap
-
-		if _, ok := columnsMap[tool.ColumnName]; !ok {
-			columnsSet = append(columnsSet, tool.ColumnName)
-			columnsMap[tool.ColumnName] = struct{}{}
-		}
 	}
 
 	environments := config.Get().Environments
@@ -374,10 +380,14 @@ func (api *API) groupByEnvironments(c *gin.Context, tools []*model.Tool) {
 		}
 		envEntity := envColumnMap[envName]
 
-		for _, columnName := range columnsSet {
+		for _, column := range columns {
+			if envEntity[column.Name] == nil {
+				continue
+			}
 			column := &Column{
-				Name:  columnName,
-				Tools: envEntity[columnName],
+				Name:     column.Name,
+				Priority: column.Priority,
+				Tools:    envEntity[column.Name],
 			}
 			env.Columns = append(env.Columns, column)
 		}
